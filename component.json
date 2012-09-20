@@ -1,0 +1,15 @@
+{
+	"name": "datatables-tools",
+	"version": "0.0.1",
+	"main": [
+		"./dataTables-tools.js",
+		"./dataTables-tools.css",
+	],
+	"dependancies": {
+		"datatables": "~1.9.4"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/simonvwade/datatables-tools.git"
+	}
+}
