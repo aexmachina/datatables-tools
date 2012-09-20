@@ -4,14 +4,15 @@ $.fn.dataTablesTools = {
 		bootstrap: false,
 		jQueryUI: false,
 		columnFiltering: false,
+		selectableRows: false,
 		selectAll: true
 	}
 };
-$.fn.initDataTables = function( selector, opts ) {
-	var options = $.extend($.fn.dataTablesTools.defaults, opts);
+$.fn.initDataTables = function( opts ) {
+	var options = $.extend($.fn.dataTablesTools.defaults, opts),
+		$elements = this;
 	// handle any dataTables
-	var $elements = $(selector), 
-		dataTableInit = {
+	var dataTableInit = {
 			bJQueryUI: options.jQueryUI,
 			aaSorting: []
 		},
@@ -40,21 +41,13 @@ $.fn.initDataTables = function( selector, opts ) {
 				);
 			});
 		});
-	if( options.columnFiltering ) {
-		// include column filtering support
-		$elements.dataTableColumnFiltering();
-	}
-	else {
-		$elements.filter('.colunFiltering').dataTableColumnFiltering();
-	}
-	// handle selectable dataTables
-	$elements.filter('.dataTableSelectable').dataTableSelectable(options);
-	// if there's no edit form on the page
-	if( $('form input[name=action][value=edit]').length == 0 ) {
-		// focus the first filter on the page
-		$elements.find('.dataTables_filter input[type=text]').first().focus();
-	}
-
+	// column filtering support
+	$elements.filter(options.columnFiltering ? '*' : '.columnFiltering')
+		.dataTableColumnFiltering(options);
+	// selectable rows support
+	$elements.filter(options.selectableRows ? '*' : '.dataTableSelectable')
+		.dataTableSelectable(options);
+	
 	return $elements;
 };
 $.fn.dataTablePrepare = function(options) {
