@@ -157,13 +157,16 @@ table thead th div.DataTables_sort_wrapper span {
 }
 
 /* Pagination nested */
-.paginate_disabled_previous, .paginate_enabled_previous, .paginate_disabled_next, .paginate_enabled_next {
-	height: 19px;
-	width: 19px;
-	margin-left: 3px;
+.paginate_disabled_previous,
+.paginate_enabled_previous,
+.paginate_disabled_next,
+.paginate_enabled_next {
 	float: left;
+	height: 19px;
 	line-height: 999em;
-
+	margin-left: 3px;
+	overflow: hidden;
+	width: 19px;
 }
 
 .paginate_disabled_previous {
