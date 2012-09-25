@@ -12,10 +12,13 @@ $.fn.initDataTables = function( opts ) {
 	var options = $.extend($.fn.dataTablesTools.defaults, opts),
 		$elements = this;
 	// handle any dataTables
-	var dataTableInit = {
+	var dataTableInit = $.extend({
 			bJQueryUI: options.jQueryUI,
-			aaSorting: []
-		},
+			aaSorting: [],
+			fnDrawCallback: function() {
+				$(this).trigger({type: 'draw'});
+			}
+		}, opts),
 		customDataTableInit = $elements.data('data-table-init');
 	if( customDataTableInit != undefined ) {
 		$.extend(dataTableInit, customDataTableInit);
@@ -46,7 +49,20 @@ $.fn.initDataTables = function( opts ) {
 		.dataTableColumnFiltering(options);
 	// selectable rows support
 	$elements.filter(options.selectableRows ? '*' : '.dataTableSelectable')
-		.dataTableSelectable(options);
+		.each(function() {
+			// if we're loading from an AJAX source then we need to listen for the init event
+			if( dataTableInit.sAjaxSource ) {
+				$(this).bind('init', function() {
+					$(this).dataTableSelectable(options);
+				});
+			}
+			else {
+				// otherwise this event never gets fired by dataTables, so trigger it to normalise the interface
+				$(this).dataTableSelectable(options);
+				$(this).trigger({type: 'init'});
+			}
+		})
+
 	
 	return $elements;
 };
@@ -120,7 +136,7 @@ $.fn.dataTableSelectable = function( options ) {
 				// create a hidden div
 				$(document.createElement('DIV')).hide()
 				// append all the checkboxes to this so the off-page ones are included
-				.append($('input[type=checkbox]', $table.fnGetNodes()))
+				.append($($table.fnGetNodes()).find('input'))
 			); // and add this to the form
 		});
 		if( options.selectAll ) {
