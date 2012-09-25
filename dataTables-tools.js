@@ -45,7 +45,7 @@ $.fn.initDataTables = function( opts ) {
 			});
 		});
 	// column filtering support
-	$elements.filter(options.columnFiltering ? '*' : '.columnFiltering')
+	$elements.filter(options.columnFiltering ? '*' : '.dataTableColumnFiltering')
 		.dataTableColumnFiltering(options);
 	// selectable rows support
 	$elements.filter(options.selectableRows ? '*' : '.dataTableSelectable')

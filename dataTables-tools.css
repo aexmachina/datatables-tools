@@ -270,6 +270,9 @@ tfoot input {
 	width: 95%;
 	color: #444;
 }
+.table-bordered tfoot input {
+	width: 80%;
+}
 
 tfoot input.search_init {
 	color: #999;
