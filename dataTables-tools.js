@@ -5,7 +5,8 @@ $.fn.dataTablesTools = {
 		jQueryUI: false,
 		columnFiltering: false,
 		selectableRows: false,
-		selectAll: true
+		selectAll: true,
+		onDraw: null
 	}
 };
 $.fn.initDataTables = function( opts ) {
@@ -30,6 +31,9 @@ $.fn.initDataTables = function( opts ) {
 		    'sWrapper': 'dataTables_wrapper form-inline'
 		});
 	}
+	if( options.onDraw ) {
+		$elements.bind('draw', options.onDraw);
+	}
 	$elements
 		.not('.noDataTable')
 		.dataTablePrepare()
@@ -51,18 +55,17 @@ $.fn.initDataTables = function( opts ) {
 	$elements.filter(options.selectableRows ? '*' : '.dataTableSelectable')
 		.each(function() {
 			// if we're loading from an AJAX source then we need to listen for the init event
-			if( dataTableInit.sAjaxSource ) {
-				$(this).bind('init', function() {
-					$(this).dataTableSelectable(options);
-				});
-			}
-			else {
-				// otherwise this event never gets fired by dataTables, so trigger it to normalise the interface
+			$(this).bind('init', function() {
 				$(this).dataTableSelectable(options);
+			});
+		});
+	// if we're not loading from an AJAX source the 'init' event never gets fired 
+	// by dataTables, so trigger it to normalise the interface
+	$elements.each(function() {
+			if( !dataTableInit.sAjaxSource ) {
 				$(this).trigger({type: 'init'});
 			}
-		})
-
+		});
 	
 	return $elements;
 };
