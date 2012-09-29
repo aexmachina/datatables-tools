@@ -5,17 +5,21 @@ $.fn.dataTablesTools = {
 		jQueryUI: false,
 		columnFiltering: false,
 		selectableRows: false,
-		selectAll: true
+		selectAll: true,
+		onDraw: null
 	}
 };
 $.fn.initDataTables = function( opts ) {
 	var options = $.extend($.fn.dataTablesTools.defaults, opts),
 		$elements = this;
 	// handle any dataTables
-	var dataTableInit = {
+	var dataTableInit = $.extend({
 			bJQueryUI: options.jQueryUI,
-			aaSorting: []
-		},
+			aaSorting: [],
+			fnDrawCallback: function() {
+				$(this).trigger({type: 'draw'});
+			}
+		}, opts),
 		customDataTableInit = $elements.data('data-table-init');
 	if( customDataTableInit != undefined ) {
 		$.extend(dataTableInit, customDataTableInit);
@@ -26,6 +30,9 @@ $.fn.initDataTables = function( opts ) {
 		$.extend($.fn.dataTableExt.oStdClasses, {
 		    'sWrapper': 'dataTables_wrapper form-inline'
 		});
+	}
+	if( options.onDraw ) {
+		$elements.bind('draw', options.onDraw);
 	}
 	$elements
 		.not('.noDataTable')
@@ -42,11 +49,23 @@ $.fn.initDataTables = function( opts ) {
 			});
 		});
 	// column filtering support
-	$elements.filter(options.columnFiltering ? '*' : '.columnFiltering')
+	$elements.filter(options.columnFiltering ? '*' : '.dataTableColumnFiltering')
 		.dataTableColumnFiltering(options);
 	// selectable rows support
 	$elements.filter(options.selectableRows ? '*' : '.dataTableSelectable')
-		.dataTableSelectable(options);
+		.each(function() {
+			// if we're loading from an AJAX source then we need to listen for the init event
+			$(this).bind('init', function() {
+				$(this).dataTableSelectable(options);
+			});
+		});
+	// if we're not loading from an AJAX source the 'init' event never gets fired 
+	// by dataTables, so trigger it to normalise the interface
+	$elements.each(function() {
+			if( !dataTableInit.sAjaxSource ) {
+				$(this).trigger({type: 'init'});
+			}
+		});
 	
 	return $elements;
 };
@@ -120,7 +139,7 @@ $.fn.dataTableSelectable = function( options ) {
 				// create a hidden div
 				$(document.createElement('DIV')).hide()
 				// append all the checkboxes to this so the off-page ones are included
-				.append($('input[type=checkbox]', $table.fnGetNodes()))
+				.append($($table.fnGetNodes()).find('input'))
 			); // and add this to the form
 		});
 		if( options.selectAll ) {
