@@ -6,7 +6,12 @@ $.fn.dataTablesTools = {
 		columnFiltering: false,
 		selectableRows: false,
 		selectAll: true,
-		onDraw: null
+		onDraw: null,
+		/**
+		 * addUnloadHandler: Requires simonwade/form-unload.js.
+		 * You can provide options that will be passed to formUnload().
+		 */
+		addUnloadHandler: null,
 	}
 };
 $.fn.initDataTables = function( opts ) {
@@ -51,13 +56,28 @@ $.fn.initDataTables = function( opts ) {
 	// column filtering support
 	$elements.filter(options.columnFiltering ? '*' : '.dataTableColumnFiltering')
 		.dataTableColumnFiltering(options);
+	// onbeforeunload handling support
+	if( options.addUnloadHandler ) {
+		$elements.each(function() {
+			var unloadOptions = (typeof options.addUnloadHandler == 'object' ? options.addUnloadHandler : {}),
+				exclude = '.dataTables_filter input';
+			if( typeof unloadOptions.exclude == 'object' ) {
+				unloadOptions.exclude = unloadOptions.exclude.add($(this).find(exclude));
+			}
+			else {
+				unloadOptions.exclude = (unloadOptions.exclude ? unloadOptions.exclude + ', ' + exclude : exclude);
+			}
+			$(this).closest('form').formUnload(unloadOptions);
+		});
+		$elements.bind('init', function() {
+			$(this).formUnload('addInputs', $($(this).dataTable().fnGetNodes()));
+		});
+	}
 	// selectable rows support
 	$elements.filter(options.selectableRows ? '*' : '.dataTableSelectable')
-		.each(function() {
-			// if we're loading from an AJAX source then we need to listen for the init event
-			$(this).bind('init', function() {
-				$(this).dataTableSelectable(options);
-			});
+		// if we're loading from an AJAX source then we need to listen for the init event
+		.bind('init', function() {
+			$(this).dataTableSelectable(options);
 		});
 	// if we're not loading from an AJAX source the 'init' event never gets fired 
 	// by dataTables, so trigger it to normalise the interface
@@ -66,7 +86,6 @@ $.fn.initDataTables = function( opts ) {
 				$(this).trigger({type: 'init'});
 			}
 		});
-	
 	return $elements;
 };
 $.fn.dataTablePrepare = function(options) {
