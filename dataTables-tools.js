@@ -58,20 +58,25 @@ $.fn.initDataTables = function( opts ) {
 		.dataTableColumnFiltering(options);
 	// onbeforeunload handling support
 	if( options.addUnloadHandler ) {
+		var unloadOptions = $.extend(
+				{}, (typeof options.addUnloadHandler == 'object' ? options.addUnloadHandler : {})
+			),
+			exclude = '.dataTables_filter input';
+		if( typeof unloadOptions.exclude == 'object' ) {
+			unloadOptions.exclude = unloadOptions.exclude.add($elements.find(exclude));
+		}
+		else {
+			unloadOptions.exclude = (unloadOptions.exclude ? unloadOptions.exclude + ', ' + exclude : exclude);
+		}
 		$elements.each(function() {
-			var unloadOptions = (typeof options.addUnloadHandler == 'object' ? options.addUnloadHandler : {}),
-				exclude = '.dataTables_filter input';
-			if( typeof unloadOptions.exclude == 'object' ) {
-				unloadOptions.exclude = unloadOptions.exclude.add($(this).find(exclude));
-			}
-			else {
-				unloadOptions.exclude = (unloadOptions.exclude ? unloadOptions.exclude + ', ' + exclude : exclude);
-			}
 			$(this).closest('form').formUnload(unloadOptions);
 		});
-		$elements.bind('init', function() {
-			$(this).formUnload('addInputs', $($(this).dataTable().fnGetNodes()));
-		});
+		if( !unloadOptions.skipInit ) {
+			debugger;
+			$elements.bind('init', function() {
+				$(this).formUnload('addInputs', $($(this).dataTable().fnGetNodes()));
+			});
+		}
 	}
 	// selectable rows support
 	$elements.filter(options.selectableRows ? '*' : '.dataTableSelectable')
@@ -82,10 +87,10 @@ $.fn.initDataTables = function( opts ) {
 	// if we're not loading from an AJAX source the 'init' event never gets fired 
 	// by dataTables, so trigger it to normalise the interface
 	$elements.each(function() {
-			if( !dataTableInit.sAjaxSource ) {
-				$(this).trigger({type: 'init'});
-			}
-		});
+		if( !dataTableInit.sAjaxSource ) {
+			$(this).trigger({type: 'init'});
+		}
+	});
 	return $elements;
 };
 $.fn.dataTablePrepare = function(options) {
