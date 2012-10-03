@@ -72,7 +72,6 @@ $.fn.initDataTables = function( opts ) {
 			$(this).closest('form').formUnload(unloadOptions);
 		});
 		if( !unloadOptions.skipInit ) {
-			debugger;
 			$elements.bind('init', function() {
 				$(this).formUnload('addInputs', $($(this).dataTable().fnGetNodes()));
 			});
